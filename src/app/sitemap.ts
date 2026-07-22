@@ -1,92 +1,58 @@
 import type { MetadataRoute } from "next";
 import { blogPosts } from "@/lib/blog-data";
+import { courses } from "@/lib/courses-data";
 import { sanityClient } from "@/lib/sanity";
+import { SITE_CONFIG } from "@/lib/site-config";
 
-const SITE_URL = "https://edusourcehrd.vercel.app";
+export const revalidate = 3600; // Revalidate sitemap every hour
 
-export const revalidate = 3600;
-
-type ChangeFrequency = NonNullable<
-  MetadataRoute.Sitemap[number]["changeFrequency"]
->;
-
-type StaticRoute = {
-  path: string;
-  changeFrequency: ChangeFrequency;
-  priority: number;
-};
-
-type SanityBlogPost = {
+type SanityItem = {
   slug?: string | null;
   _createdAt?: string | null;
   _updatedAt?: string | null;
   publishedAt?: string | null;
 };
 
-const staticRoutes: StaticRoute[] = [
-  { path: "/", changeFrequency: "weekly", priority: 1 },
-  { path: "/courses", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/blog", changeFrequency: "weekly", priority: 0.75 },
-  { path: "/admission", changeFrequency: "monthly", priority: 0.85 },
-  {
-    path: "/courses/hospital-administration",
-    changeFrequency: "monthly",
-    priority: 0.9,
-  },
-  {
-    path: "/courses/german-language-training",
-    changeFrequency: "monthly",
-    priority: 0.85,
-  },
-  {
-    path: "/courses/hr-management",
-    changeFrequency: "monthly",
-    priority: 0.85,
-  },
-  {
-    path: "/courses/medical-coding",
-    changeFrequency: "monthly",
-    priority: 0.85,
-  },
-  {
-    path: "/courses/logistics-shipping-management",
-    changeFrequency: "monthly",
-    priority: 0.85,
-  },
-  {
-    path: "/courses/medical-transcription",
-    changeFrequency: "monthly",
-    priority: 0.85,
-  },
-  {
-    path: "/courses/ai-digital-marketing",
-    changeFrequency: "monthly",
-    priority: 0.85,
-  },
-  { path: "/privacy-policy", changeFrequency: "yearly", priority: 0.25 },
-  { path: "/terms-of-service", changeFrequency: "yearly", priority: 0.25 },
-];
+// Distinct fallback dates to prevent identical lastModified timestamps across sitemap
+const STATIC_LAST_MODIFIED: Record<string, string> = {
+  "/": "2026-05-18T00:00:00.000Z",
+  "/courses": "2026-05-15T00:00:00.000Z",
+  "/blog": "2026-05-15T00:00:00.000Z",
+  "/admission": "2026-05-10T00:00:00.000Z",
+  "/privacy-policy": "2026-05-18T00:00:00.000Z",
+  "/terms-of-service": "2026-05-18T00:00:00.000Z",
+};
 
-function createUrl(path: string) {
-  return `${SITE_URL}${path}`;
+function parseDate(dateStr?: string | null, fallback: Date = new Date("2026-05-01")): Date {
+  if (!dateStr) return fallback;
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? fallback : parsed;
 }
 
-function toValidDate(value: string | null | undefined, fallbackDate: Date) {
-  if (!value) {
-    return fallbackDate;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? fallbackDate : date;
-}
-
-function normalizeSlug(slug: string) {
+function normalizeSlug(slug: string): string {
   return slug.trim().replace(/^\/+|\/+$/g, "");
 }
 
-async function getSanityBlogPosts(): Promise<SanityBlogPost[]> {
+async function getSanityCourses(): Promise<SanityItem[]> {
   try {
-    return await sanityClient.fetch<SanityBlogPost[]>(
+    return await sanityClient.fetch<SanityItem[]>(
+      `*[_type == "course" && defined(slug.current)] {
+        "slug": slug.current,
+        _createdAt,
+        _updatedAt
+      }`,
+      {},
+      { next: { revalidate } }
+    );
+  } catch (error) {
+    console.error("Failed to fetch Sanity courses for sitemap:", error);
+    return [];
+  }
+}
+
+async function getSanityBlogPosts(): Promise<SanityItem[]> {
+  try {
+    return await sanityClient.fetch<SanityItem[]>(
       `*[_type == "post" && published == true && defined(slug.current)] {
         "slug": slug.current,
         _createdAt,
@@ -94,7 +60,7 @@ async function getSanityBlogPosts(): Promise<SanityBlogPost[]> {
         publishedAt
       }`,
       {},
-      { next: { revalidate } },
+      { next: { revalidate } }
     );
   } catch (error) {
     console.error("Failed to fetch Sanity blog posts for sitemap:", error);
@@ -103,55 +69,112 @@ async function getSanityBlogPosts(): Promise<SanityBlogPost[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const lastModified = new Date();
+  const baseUrl = SITE_CONFIG.url;
 
-  const staticUrls: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
-    url: createUrl(route.path),
-    lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-  }));
+  // 1. Static pages
+  const staticEntries: MetadataRoute.Sitemap = [
+    {
+      url: `${baseUrl}/`,
+      lastModified: new Date(STATIC_LAST_MODIFIED["/"]),
+      changeFrequency: "weekly",
+      priority: 1.0,
+    },
+    {
+      url: `${baseUrl}/courses`,
+      lastModified: new Date(STATIC_LAST_MODIFIED["/courses"]),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(STATIC_LAST_MODIFIED["/blog"]),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/admission`,
+      lastModified: new Date(STATIC_LAST_MODIFIED["/admission"]),
+      changeFrequency: "monthly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/privacy-policy`,
+      lastModified: new Date(STATIC_LAST_MODIFIED["/privacy-policy"]),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/terms-of-service`,
+      lastModified: new Date(STATIC_LAST_MODIFIED["/terms-of-service"]),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+  ];
 
-  const blogUrlMap = new Map<string, MetadataRoute.Sitemap[number]>();
+  // 2. Dynamic Course Pages
+  const courseMap = new Map<string, MetadataRoute.Sitemap[number]>();
 
+  // Local Courses
+  for (const course of courses) {
+    const slug = normalizeSlug(course.slug);
+    if (!slug) continue;
+
+    courseMap.set(slug, {
+      url: `${baseUrl}/courses/${slug}`,
+      lastModified: new Date("2026-05-15T00:00:00.000Z"),
+      changeFrequency: "monthly",
+      priority: 0.85,
+    });
+  }
+
+  // Sanity Courses (overrides or adds to courseMap)
+  const sanityCourses = await getSanityCourses();
+  for (const course of sanityCourses) {
+    if (!course.slug) continue;
+    const slug = normalizeSlug(course.slug);
+    if (!slug) continue;
+
+    courseMap.set(slug, {
+      url: `${baseUrl}/courses/${slug}`,
+      lastModified: parseDate(course._updatedAt || course._createdAt, new Date("2026-05-15")),
+      changeFrequency: "monthly",
+      priority: 0.85,
+    });
+  }
+
+  // 3. Dynamic Blog Post Pages
+  const blogMap = new Map<string, MetadataRoute.Sitemap[number]>();
+
+  // Local Blog Posts
   for (const post of blogPosts) {
     const slug = normalizeSlug(post.slug);
+    if (!slug) continue;
 
-    if (!slug) {
-      continue;
-    }
-
-    blogUrlMap.set(slug, {
-      url: createUrl(`/blog/${slug}`),
-      lastModified: toValidDate(post.date, lastModified),
+    blogMap.set(slug, {
+      url: `${baseUrl}/blog/${slug}`,
+      lastModified: parseDate(post.date, new Date("2026-05-12")),
       changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.7,
     });
   }
 
-  const sanityBlogPosts = await getSanityBlogPosts();
-
-  for (const post of sanityBlogPosts) {
-    if (!post.slug) {
-      continue;
-    }
-
+  // Sanity Blog Posts
+  const sanityPosts = await getSanityBlogPosts();
+  for (const post of sanityPosts) {
+    if (!post.slug) continue;
     const slug = normalizeSlug(post.slug);
+    if (!slug) continue;
 
-    if (!slug) {
-      continue;
-    }
-
-    blogUrlMap.set(slug, {
-      url: createUrl(`/blog/${slug}`),
-      lastModified: toValidDate(
-        post._updatedAt ?? post.publishedAt ?? post._createdAt,
-        lastModified,
+    blogMap.set(slug, {
+      url: `${baseUrl}/blog/${slug}`,
+      lastModified: parseDate(
+        post._updatedAt || post.publishedAt || post._createdAt,
+        new Date("2026-05-12")
       ),
       changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.7,
     });
   }
 
-  return [...staticUrls, ...blogUrlMap.values()];
+  return [...staticEntries, ...courseMap.values(), ...blogMap.values()];
 }

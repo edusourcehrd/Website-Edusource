@@ -1,0 +1,48 @@
+export const SITE_CONFIG = {
+  name: "EDUSOURCE HRD CENTRE",
+  shortName: "Edusource HRD",
+  legalName: "Edusource HRD Centre, Kollam",
+  description:
+    "Edusource HRD Centre in Kollam offers government-approved, job-oriented training in Hospital Administration, HR Management, Logistics, Medical Coding, Medical Transcription, and German Language.",
+  url: "https://edusourcehrd.com",
+  ogImage: "https://edusourcehrd.com/og-image.png",
+  logo: "https://edusourcehrd.com/edusource-logo.png",
+  favicon: "/edusource-mini-icon.png",
+  themeColor: "#0056E0",
+  contact: {
+    phone: "+91 9895953159",
+    phoneRaw: "+919895953159",
+    whatsapp: "https://wa.me/919633492021",
+    email: "info@edusourcehrd.com",
+    address: {
+      street: "Near Chinnakada",
+      locality: "Kollam",
+      region: "Kerala",
+      postalCode: "691001",
+      country: "IN",
+      fullAddress: "Edusource HRD Centre, Near Chinnakada, Kollam, Kerala - 691001",
+    },
+    geo: {
+      latitude: "8.8932",
+      longitude: "76.6141",
+    },
+  },
+  social: {
+    instagram: "https://www.instagram.com/edusourcehrd",
+    facebook: "https://www.facebook.com/edusourcehrdcentre",
+    linkedin: "https://www.linkedin.com/company/edusourcehrd",
+    youtube: "https://www.youtube.com/@edusourcehrdcentre",
+  },
+  keywords: [
+    "Edusource HRD Centre",
+    "Edusource HRD Kollam",
+    "Hospital Administration Course Kollam",
+    "German Language Training Kollam",
+    "HR Management Course Kerala",
+    "Medical Coding Institute Kollam",
+    "Logistics and Shipping Management Kollam",
+    "Medical Transcription Course Kerala",
+    "Government Approved Diploma Kollam",
+    "Healthcare Skill Development Kerala",
+  ],
+};

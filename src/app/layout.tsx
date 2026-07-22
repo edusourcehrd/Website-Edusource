@@ -21,8 +21,8 @@ const fontMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EduSource HRD Centre, Kollam | Government-Approved Skill Training Institute",
-  description: "EduSource HRD Centre in Kollam offers government-approved, job-oriented training in Hospital Administration, HR Management, Logistics, Medical Coding, Medical Transcription, and German language.",
+  title: "Edusource HRD Centre, Kollam | Government-Approved Skill Training Institute",
+  description: "Edusource HRD Centre in Kollam offers government-approved, job-oriented training in Hospital Administration, HR Management, Logistics, Medical Coding, Medical Transcription, and German language.",
   icons: {
     icon: "/edusource-mini-icon.png",
   },

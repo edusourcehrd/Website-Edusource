@@ -127,7 +127,7 @@ export const courses: Course[] = [
   {
     id: 'german-language',
     slug: 'german-language-training',
-    title: 'German Language Training (A1-B2)',
+    title: 'German Language Training',
     shortDescription: 'Learn German from experts for international study and career opportunities.',
     fullDescription: 'Master the German language from basics to advanced levels with a focus on Goethe/ÖSD exam preparation and cultural integration.',
     duration: '180 Days',
@@ -147,7 +147,7 @@ export const courses: Course[] = [
     overview: [
       'Intensive training for A1, A2, B1, and B2 levels',
       'Focus on speaking, listening, reading, and writing',
-      'Exam-oriented preparation for Goethe and ÖSD',
+      'Exam-oriented preparation for Goethe',
       'Cultural orientation for living and working in Germany'
     ],
     whoIsItFor: [

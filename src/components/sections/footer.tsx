@@ -100,13 +100,13 @@ const Footer = () => {
                   <span className="text-[15px] font-bold text-slate-700">+91 9895953159</span>
                 </div>
               </a>
-              <a href="mailto:info@edusourcehrd.in" className="flex items-start gap-3 group">
+              <a href="hrdcentrekollam@gmail.com" className="flex items-start gap-3 group">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0 shadow-sm group-hover:bg-emerald-600 group-hover:text-white transition-all">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email Us</span>
-                  <span className="text-[15px] font-bold text-slate-700">info@edusourcehrd.in</span>
+                  <span className="text-[15px] font-bold text-slate-700">hrdcentrekollam@gmail.com</span>
                 </div>
               </a>
               <div className="flex items-start gap-3">

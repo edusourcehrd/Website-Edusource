@@ -106,10 +106,10 @@ const FAQ: React.FC = () => {
             <p className="text-[18px] text-[#4A5568]">
               Still have questions? Reach out to our advisors at{" "}
               <a 
-                href="mailto:info@edusourcehrd.in" 
+                href="mailto:hrdcentrekollam@gmail.com" 
                 className="text-black font-semibold hover:underline transition-all"
               >
-                info@edusourcehrd.in
+                hrdcentrekollam@gmail.com
               </a>
             </p>
           </div>

@@ -209,23 +209,21 @@ export default function Hero() {
                 >
                   {/* Desktop/Tablet Media */}
                   <Image
-                    src="/hero2.gif"
+                    src="/hero2.webp"
                     alt="EduSource Hero Animation"
                     width={780}
                     height={600}
                     priority
-                    unoptimized
                     className="hidden md:block w-full max-w-[620px] lg:max-w-[720px] xl:max-w-[780px] h-auto object-contain select-none pointer-events-none drop-shadow-[0_20px_80px_rgba(0,0,0,0.2)]"
                     draggable={false}
                   />
                   {/* Mobile Media */}
                   <Image
-                    src="/hero.gif"
+                    src="/hero.webp"
                     alt="EduSource Mobile Hero Animation"
                     width={340}
                     height={400}
                     priority
-                    unoptimized
                     className="block md:hidden w-full max-w-[320px] h-auto object-contain select-none pointer-events-none drop-shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
                     draggable={false}
                   />

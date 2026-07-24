@@ -84,7 +84,7 @@ const Testimonials = () => {
               <div className="bg-white rounded-[24px] overflow-hidden shadow-soft border border-slate-200 hover:shadow-2xl transition-all duration-500 cursor-default group">
                 <div className="bg-[#075e54] p-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white/20 border border-white/10">
-                    <Image src="/edusource-mini-icon.png" alt="Support" width={40} height={40} className="object-cover" />
+                    <Image src="/edusource-mini-icon.webp" alt="Support" width={40} height={40} className="object-cover" />
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-bold text-[15px] leading-tight">Career Counselling</p>
@@ -162,7 +162,7 @@ const Testimonials = () => {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden">
-                      <Image src="/gmail.jpg" alt="Support" width={40} height={40} className="object-cover" />
+                      <Image src="/gmail.webp" alt="Support" width={40} height={40} className="object-cover" />
                     </div>
                     <span className="font-bold text-black text-[16px]">Ejas</span>
                   </div>
@@ -190,7 +190,7 @@ const Testimonials = () => {
               <div className="bg-white rounded-[24px] overflow-hidden shadow-soft border border-slate-200 hover:shadow-2xl transition-all duration-500 cursor-default group">
                 <div className="bg-[#075e54] p-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white/20 border border-white/10">
-                    <Image src="/edusource-mini-icon.png" alt="Support" width={40} height={40} className="object-cover" />
+                    <Image src="/edusource-mini-icon.webp" alt="Support" width={40} height={40} className="object-cover" />
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-bold text-[15px] leading-tight">Program Guidance</p>
@@ -276,7 +276,7 @@ const Testimonials = () => {
               <div className="bg-white rounded-[24px] overflow-hidden shadow-soft border border-slate-200 hover:shadow-2xl transition-all duration-500 cursor-default group">
                 <div className="bg-[#075e54] p-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white/20 border border-white/10">
-                    <Image src="/edusource-mini-icon.png" alt="Support" width={40} height={40} className="object-cover" />
+                    <Image src="/edusource-mini-icon.webp" alt="Support" width={40} height={40} className="object-cover" />
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-bold text-[15px] leading-tight">Admissions Support</p>
@@ -341,7 +341,7 @@ const Testimonials = () => {
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden">
-                      <Image src="/gmail.jpg" alt="Interview" width={40} height={40} className="object-cover" />
+                      <Image src="/gmail.webp" alt="Interview" width={40} height={40} className="object-cover" />
                     </div>
                     <span className="font-bold text-black text-[16px]">Vrindhavinod</span>
                   </div>

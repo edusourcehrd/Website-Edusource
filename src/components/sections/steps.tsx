@@ -124,7 +124,7 @@ export default function StepsSection() {
 
                     <div className={`absolute -bottom-6 -right-6 w-20 h-20 bg-white rounded-full p-4 shadow-2xl flex items-center justify-center rotate-12 ${!isMobile ? 'group-hover:rotate-0 transition-transform duration-500' : ''}`}>
                       <Image 
-                        src="/edusource-mini-icon.png"
+                        src="/edusource-mini-icon.webp"
                         alt="Official Seal"
                         width={48}
                         height={48}

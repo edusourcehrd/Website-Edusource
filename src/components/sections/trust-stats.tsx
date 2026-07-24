@@ -66,7 +66,7 @@ export default function TrustStats() {
               <div className="relative z-10">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 mb-6 sm:mb-8 shadow-md rounded-2xl overflow-hidden">
                   <Image 
-                    src="/girl.jpeg" 
+                    src="/girl.webp" 
                     alt="Student Support" 
                     width={64} 
                     height={64}

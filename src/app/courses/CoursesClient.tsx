@@ -16,6 +16,7 @@ import {
   Filter
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CoursesClient() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -188,10 +189,12 @@ export default function CoursesClient() {
                         {course.isSanity ? (
                           course.courseImageUrl && (
                             <div className="mt-6 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 shadow-sm aspect-video">
-                              <img
+                              <Image
                                 src={course.courseImageUrl}
                                 alt={course.title}
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                className="object-cover"
                               />
                             </div>
                           )
@@ -205,7 +208,7 @@ export default function CoursesClient() {
                                 muted
                                 loop
                                 playsInline
-                                preload="metadata"
+                                preload="none"
                               />
                             </div>
                           )

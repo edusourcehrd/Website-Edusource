@@ -20,6 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 interface PostDetail {
@@ -179,7 +180,7 @@ export default function BlogDetailClient({ slug, initialPost }: BlogDetailClient
           {/* Featured Image */}
           <div className="aspect-[16/9] rounded-[32px] overflow-hidden bg-slate-100 mb-12 shadow-md">
             <img 
-              src={post.featuredImageUrl || '/edusource-logo.png'} 
+              src={post.featuredImageUrl || '/edusource-logo.webp'} 
               alt={post.featuredImageAlt || post.title}
               className="w-full h-full object-cover"
             />
@@ -250,7 +251,7 @@ export default function BlogDetailClient({ slug, initialPost }: BlogDetailClient
                     <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all group">
                       <div className="aspect-[16/10] rounded-xl overflow-hidden bg-slate-100 mb-4">
                         <img 
-                          src={relatedPost.featuredImageUrl || '/edusource-logo.png'} 
+                          src={relatedPost.featuredImageUrl || '/edusource-logo.webp'} 
                           alt={relatedPost.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

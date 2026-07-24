@@ -26,586 +26,751 @@ declare global {
     turnstile?: {
       reset: () => void;
     };
+    onTurnstileSuccess?: (token: string) => void;
+    onTurnstileExpired?: () => void;
+    onTurnstileError?: () => void;
   }
 }
 
-const formSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters."),
-  dateOfBirth: z.string().min(1, "Date of birth is required."),
-  gender: z.enum(["Male", "Female", "Other"], {
-    required_error: "Please select a gender.",
+const admissionSchema = z.object({
+  fullName: z.string().min(1, "പൂർണ്ണനാമം ആവശ്യമാണ് / Full name is required"),
+  address: z.string().min(1, "മേൽവിലാസം ആവശ്യമാണ് / Address is required"),
+  mobile: z.string().regex(/^[6789]\d{9}$/, "അസാധുവായ മൊബൈൽ നമ്പർ (10 അക്കങ്ങൾ വേണം) / Invalid mobile number (10 digits starting with 6-9)"),
+  aadhaar: z.string().refine((val) => val === "" || /^\d{12}$/.test(val), {
+    message: "ആധാർ നമ്പർ 12 അക്കങ്ങൾ ആയിരിക്കണം / Aadhaar number must be 12 digits",
+  }).optional(),
+  email: z.string().email("അസാധുവായ ഇമെയിൽ / Invalid email address"),
+  guardianName: z.string().min(1, "രക്ഷാകർത്താവിന്റെ പേര് ആവശ്യമാണ് / Guardian's name is required"),
+  relationship: z.string().min(1, "ബന്ധം ആവശ്യമാണ് / Relationship is required"),
+  guardianMobile: z.string().regex(/^[6789]\d{9}$/, "അസാധുവായ മൊബൈൽ നമ്പർ / Invalid mobile number"),
+  dateOfBirth: z.string().min(1, "ജനനത്തീയതി ആവശ്യമാണ് / Date of birth is required"),
+  age: z.string().min(1, "പ്രായം ആവശ്യമാണ് / Age is required"),
+  gender: z.enum(["സ്ത്രീ", "പുരുഷൻ"], {
+    message: "ലിംഗഭേദം തിരഞ്ഞെടുക്കുക / Please select gender",
   }),
-  guardianName: z.string().min(2, "Parent/Guardian name is required."),
-  mobileNumber: z
-    .string()
-    .regex(/^[0-9]{10}$/, "Please enter a valid 10-digit mobile number."),
-  whatsappNumber: z
-    .string()
-    .regex(/^[0-9]{10}$/, "Please enter a valid 10-digit WhatsApp number."),
-  email: z.string().email("Please enter a valid email address."),
-  address: z.string().min(10, "Please enter your complete address."),
-  district: z.string().min(2, "District is required."),
-  state: z.string().min(2, "State is required."),
-  pincode: z.string().regex(/^[0-9]{6}$/, "Please enter a valid 6-digit Pincode."),
-  qualification: z.string().min(1, "Highest qualification is required."),
-  yearOfPassing: z.string().regex(/^[0-9]{4}$/, "Enter a valid year (e.g. 2023)."),
-  institutionName: z.string().min(2, "School/College name is required."),
-  stream: z.string().min(2, "Stream/Specialization is required."),
-  percentage: z.string().min(1, "Percentage/CGPA is required."),
-  course: z.string().min(1, "Please select a course."),
-  preferredMode: z.enum(["Offline (Campus)", "Online", "Hybrid"], {
-    required_error: "Please select a learning mode.",
+  caste: z.string().min(1, "ജാതി ആവശ്യമാണ് / Caste is required"),
+  religion: z.string().min(1, "മതം ആവശ്യമാണ് / Religion is required"),
+  hasReservation: z.enum(["ഉണ്ട്", "ഇല്ല"], {
+    message: "സംവരണം ഉണ്ടോ എന്ന് തിരഞ്ഞെടുക്കുക / Please select reservation status",
   }),
-  preferredBatch: z.enum(["Morning", "Evening", "Weekend"], {
-    required_error: "Please select a preferred batch.",
+  reservationCategory: z.string().optional(),
+  educationalQualification: z.string().min(1, "വിദ്യാഭ്യാസ യോഗ്യത ആവശ്യമാണ് / Educational qualification is required"),
+  district: z.string().min(1, "ജില്ല ആവശ്യമാണ് / District is required"),
+  trainingCollegeName: z.string().min(1, "പരിശീലന കോളേജിന്റെ പേര് ആവശ്യമാണ് / College name is required"),
+  trainingCollegeCode: z.string().min(1, "കോളേജ് കോഡ് ആവശ്യമാണ് / College code is required"),
+  courseName: z.string().min(1, "കോഴ്സിന്റെ പേര് ആവശ്യമാണ് / Course name is required"),
+  duration: z.string().min(1, "കാലയളവ് ആവശ്യമാണ് / Duration is required"),
+  referredBy: z.string().min(1, "റഫർ ചെയ്ത ആൾ / കോർഡിനേറ്റർ ആവശ്യമാണ് / Referred by is required"),
+  principalName: z.string().min(1, "പ്രിൻസിപ്പലിന്റെ പേര് ആവശ്യമാണ് / Principal name is required"),
+  acceptedTerms: z.boolean().refine(Boolean, {
+    message: "നിങ്ങൾ നിബന്ധനകൾ അംഗീകരിക്കണം / You must accept the terms and conditions",
   }),
-  hostelRequired: z.enum(["Yes", "No"], {
-    required_error: "Please specify if hostel facility is required.",
+  acceptedDeclaration: z.boolean().refine(Boolean, {
+    message: "നിങ്ങൾ സത്യപ്രസ്താവന അംഗീകരിക്കണം / You must accept the declaration",
   }),
-  declaration: z.literal(true, {
-    errorMap: () => ({ message: "You must accept the declaration to proceed." }),
-  }),
-  cfTurnstileResponse: z.string().min(1, "Security check failed. Please complete the verification."),
+  website: z.string().optional(), // Honeypot
+  status: z.string().optional(),
+}).refine((data) => {
+  if (data.hasReservation === "ഉണ്ട്" && !data.reservationCategory) {
+    return false;
+  }
+  return true;
+}, {
+  message: "സംവരണ വിഭാഗം തിരഞ്ഞെടുക്കുക / Please select reservation category",
+  path: ["reservationCategory"],
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type AdmissionFormValues = z.infer<typeof admissionSchema>;
 
 export default function AdmissionClient() {
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [formStartTime] = React.useState(Date.now());
+  const [turnstileToken, setTurnstileToken] = React.useState<string | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<AdmissionFormValues>({
+    resolver: zodResolver(admissionSchema),
     defaultValues: {
       fullName: "",
-      dateOfBirth: "",
-      gender: undefined,
-      guardianName: "",
-      mobileNumber: "",
-      whatsappNumber: "",
-      email: "",
       address: "",
+      mobile: "",
+      aadhaar: "",
+      email: "",
+      guardianName: "",
+      relationship: "",
+      guardianMobile: "",
+      dateOfBirth: "",
+      age: "",
+      gender: undefined,
+      caste: "",
+      religion: "",
+      hasReservation: undefined,
+      reservationCategory: "",
+      educationalQualification: "",
       district: "",
-      state: "Kerala",
-      pincode: "",
-      qualification: "",
-      yearOfPassing: "",
-      institutionName: "",
-      stream: "",
-      percentage: "",
-      course: "",
-      preferredMode: undefined,
-      preferredBatch: undefined,
-      hostelRequired: "No",
-      declaration: undefined,
-      cfTurnstileResponse: "",
+      trainingCollegeName: "",
+      trainingCollegeCode: "",
+      courseName: "",
+      duration: "",
+      referredBy: "",
+      principalName: "",
+      acceptedTerms: false,
+      acceptedDeclaration: false,
+      website: "",
+      status: "New",
     },
   });
 
-  const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true);
+  const onSubmit = async (data: AdmissionFormValues) => {
+    // Honeypot check
+    if (data.website) {
+      toast.error("Spam detected.");
+      return;
+    }
+
+    // Minimum time check (6 seconds)
+    if (Date.now() - formStartTime < 6000) {
+      toast.error("Please review the form before submitting.");
+      return;
+    }
+
     try {
       const response = await fetch("/api/admission", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, turnstileToken }),
       });
 
       const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to submit application.");
+      if (result.success) {
+        toast.success("Application submitted successfully. Edusource HRD Centre will contact you soon.");
+        form.reset();
+        setTurnstileToken(null);
+        if (typeof window !== "undefined" && window.turnstile) {
+          window.turnstile.reset();
+        }
+      } else {
+        toast.error(result.message || "Something went wrong while submitting. Please try again or contact Edusource HRD Centre.");
       }
-
-      toast.success("Application Submitted Successfully!", {
-        description: "Our admissions office will review your details and contact you shortly.",
-      });
-
-      setIsSubmitted(true);
-    } catch (error: any) {
-      toast.error("Submission Error", {
-        description: error.message || "Something went wrong. Please try again or contact us directly.",
-      });
-      if (typeof window !== "undefined" && window.turnstile) {
-        window.turnstile.reset();
-      }
-      form.setValue("cfTurnstileResponse", "");
-    } finally {
-      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Admission submission error:", error);
+      toast.error("Something went wrong while submitting. Please try again or contact Edusource HRD Centre.");
     }
   };
 
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
   React.useEffect(() => {
-    (window as any).onTurnstileSuccess = (token: string) => {
-      form.setValue("cfTurnstileResponse", token, { shouldValidate: true });
+    window.onTurnstileSuccess = (token: string) => {
+      setTurnstileToken(token);
     };
-    (window as any).onTurnstileExpired = () => {
-      form.setValue("cfTurnstileResponse", "", { shouldValidate: true });
+    window.onTurnstileExpired = () => {
+      setTurnstileToken(null);
     };
-    (window as any).onTurnstileError = () => {
-      form.setValue("cfTurnstileResponse", "", { shouldValidate: true });
+    window.onTurnstileError = () => {
+      setTurnstileToken(null);
     };
-  }, [form]);
+  }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 font-sans antialiased text-slate-900">
-      <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-        async
-        defer
-      />
-
+    <div className="flex flex-col min-h-screen bg-[#f8fbff]">
       <Navbar />
-
-      <main className="flex-grow pt-28 pb-20">
-        <section className="bg-[#0056E0] text-white py-16 px-4 sm:px-6 relative overflow-hidden">
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-widest mb-4 border border-white/20">
-              <ClipboardList className="w-4 h-4 text-emerald-400" /> Official Application Form
-            </span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
-              Online Admission Form 2026-27
+      <main className="flex-grow pt-36 md:pt-44 pb-24 px-4 md:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Premium Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest mb-6">
+              <Lock size={12} className="text-blue-500" />
+              Secure Admission Portal
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-black text-slate-950 mb-3 tracking-tight">
+              അപേക്ഷാ ഫോം <span className="text-blue-600 block sm:inline">/ Admission Form</span>
             </h1>
-            <p className="text-white/80 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-              Begin your professional journey with Edusource HRD Centre, Kollam. Fill out the application below to register for our government-approved diploma programs.
-            </p>
+            
+            <div className="space-y-2 mt-6">
+              <h2 className="text-xl md:text-2xl font-extrabold text-slate-800 leading-tight">
+                Youth Employability Skill Training Educational Co-operative Society Limited
+              </h2>
+              <p className="text-blue-600 font-bold uppercase tracking-widest text-xs md:text-sm">
+                National Youth Programme Project
+              </p>
+            </div>
           </div>
-        </section>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-8 relative z-20">
-          <Card className="border-slate-200/80 shadow-xl rounded-2xl bg-white overflow-hidden">
-            {isSubmitted ? (
-              <CardContent className="p-8 sm:p-12 text-center">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle2 className="w-10 h-10" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Application Received!</h2>
-                <p className="text-slate-600 max-w-md mx-auto mb-8">
-                  Thank you for applying to Edusource HRD Centre. Your application reference has been logged. Our admission academic coordinator will reach out to you within 24 hours.
-                </p>
-                <Button onClick={() => { setIsSubmitted(false); form.reset(); }} className="bg-[#0056E0] text-white hover:bg-blue-700 font-bold px-8 py-3 rounded-full">
-                  Submit Another Application
-                </Button>
-              </CardContent>
-            ) : (
-              <CardContent className="p-6 sm:p-10">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
-                    
-                    {/* Step 1: Personal Details */}
-                    <div>
-                      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 mb-6">
-                        <User className="w-6 h-6 text-[#0056E0]" />
-                        <h2 className="text-xl font-bold text-slate-900">1. Personal Information</h2>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="fullName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Full Name (as per certificates) *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. Anjali Nair" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+          {/* Secure Badges */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+            {[
+              { icon: ShieldCheck, text: "Secure admission form" },
+              { icon: Lock, text: "Data used only for admission" },
+              { icon: CheckCircle2, text: "Edusource HRD Centre, Kollam" }
+            ].map((badge, idx) => (
+              <div key={idx} className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                <badge.icon className="size-4 text-emerald-500" />
+                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{badge.text}</span>
+              </div>
+            ))}
+          </div>
 
-                        <FormField
-                          control={form.control}
-                          name="dateOfBirth"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Date of Birth *</FormLabel>
-                              <FormControl>
-                                <Input type="date" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+          {/* Promotional Image Card */}
+          <div className="mx-auto mb-12 max-w-4xl rounded-[32px] bg-white p-3 shadow-2xl shadow-blue-100/30 border border-slate-100 overflow-hidden">
+            <Image
+              src="/youth-skill-training.webp"
+              alt="Youth Employability Skill Training Educational Co-operative Society"
+              width={1000}
+              height={250}
+              className="w-full h-auto rounded-[24px] object-cover hover:scale-[1.01] transition-transform duration-500"
+              priority
+            />
+          </div>
 
-                        <FormField
-                          control={form.control}
-                          name="gender"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Gender *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="rounded-xl border-slate-200">
-                                    <SelectValue placeholder="Select gender" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Male">Male</SelectItem>
-                                  <SelectItem value="Female">Female</SelectItem>
-                                  <SelectItem value="Other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
+              {/* Honeypot field */}
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem className="hidden">
+                    <FormControl>
+                      <Input {...field} tabIndex={-1} autoComplete="off" />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-                        <FormField
-                          control={form.control}
-                          name="guardianName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Parent / Guardian Name *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. K. R. Nair" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
+              {/* Personal Information */}
+              <Card className="border border-slate-100 shadow-xl shadow-blue-50/50 rounded-[32px] overflow-hidden bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 py-6">
+                  <CardTitle className="flex items-center gap-3 text-white text-xl">
+                    <User className="size-6 text-blue-100" />
+                    വ്യക്തിഗത വിവരങ്ങൾ / Personal Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">പൂർണ്ണനാമം (SSLC സർട്ടിഫിക്കറ്റ് പ്രകാരം) / Full name as per SSLC certificate *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your full name" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    {/* Step 2: Contact Details */}
-                    <div>
-                      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 mb-6">
-                        <BookOpen className="w-6 h-6 text-[#0056E0]" />
-                        <h2 className="text-xl font-bold text-slate-900">2. Contact Details</h2>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="mobileNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Mobile Number *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="10-digit number" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">മേൽവിലാസം (പിൻകോഡ് സഹിതം) / Address with pincode *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your full address with pincode" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                        <FormField
-                          control={form.control}
-                          name="whatsappNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">WhatsApp Number *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="10-digit WhatsApp number" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                  <FormField
+                    control={form.control}
+                    name="mobile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">മൊബൈൽ നമ്പർ / Mobile number *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="10 digit mobile number" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                        <FormField
-                          control={form.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem className="sm:col-span-2">
-                              <FormLabel className="font-semibold text-slate-700">Email Address *</FormLabel>
-                              <FormControl>
-                                <Input type="email" placeholder="name@example.com" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                  <FormField
+                    control={form.control}
+                    name="aadhaar"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">ആധാർ നമ്പർ / Aadhaar number</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="12 digit Aadhaar number" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormDescription className="text-[10px] text-slate-400">Your Aadhaar number is encrypted and secure.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                        <FormField
-                          control={form.control}
-                          name="address"
-                          render={({ field }) => (
-                            <FormItem className="sm:col-span-2">
-                              <FormLabel className="font-semibold text-slate-700">Residential Address *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="House Name/No., Street, Place" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">ഇമെയിൽ / Email *</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="Enter your email" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                        <FormField
-                          control={form.control}
-                          name="district"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">District *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. Kollam" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                  <FormField
+                    control={form.control}
+                    name="dateOfBirth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">ജനനത്തീയതി / Date of birth *</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                        <FormField
-                          control={form.control}
-                          name="pincode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Pincode *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="6-digit Pincode" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
+                  <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">പ്രായം / Age *</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="Enter your age" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    {/* Step 3: Academic Qualifications */}
-                    <div>
-                      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 mb-6">
-                        <GraduationCap className="w-6 h-6 text-[#0056E0]" />
-                        <h2 className="text-xl font-bold text-slate-900">3. Academic Qualification</h2>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="qualification"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Highest Qualification *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="rounded-xl border-slate-200">
-                                    <SelectValue placeholder="Select qualification" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="+2 / Higher Secondary">+2 / Higher Secondary</SelectItem>
-                                  <SelectItem value="VHSE">VHSE</SelectItem>
-                                  <SelectItem value="Diploma">Diploma</SelectItem>
-                                  <SelectItem value="Bachelor's Degree">Bachelor's Degree</SelectItem>
-                                  <SelectItem value="Master's Degree">Master's Degree</SelectItem>
-                                  <SelectItem value="Other">Other</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="stream"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Stream / Specialization *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. Science / Commerce / B.Sc" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="institutionName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">School / College Name *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Institution last attended" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="yearOfPassing"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Year of Passing *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. 2024" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="percentage"
-                          render={({ field }) => (
-                            <FormItem className="sm:col-span-2">
-                              <FormLabel className="font-semibold text-slate-700">Percentage / Grade *</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. 82% or Grade A" {...field} className="rounded-xl border-slate-200 focus-visible:ring-blue-500" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Step 4: Course Choice */}
-                    <div>
-                      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 mb-6">
-                        <ClipboardList className="w-6 h-6 text-[#0056E0]" />
-                        <h2 className="text-xl font-bold text-slate-900">4. Program Preference</h2>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="course"
-                          render={({ field }) => (
-                            <FormItem className="sm:col-span-2">
-                              <FormLabel className="font-semibold text-slate-700">Select Course *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="rounded-xl border-slate-200 focus-visible:ring-blue-500">
-                                    <SelectValue placeholder="Choose your desired diploma program" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Diploma in Hospital Administration">Diploma in Hospital Administration</SelectItem>
-                                  <SelectItem value="German Language Training Program">German Language Training Program</SelectItem>
-                                  <SelectItem value="Diploma in HR Management & Administration">Diploma in HR Management & Administration</SelectItem>
-                                  <SelectItem value="Professional Medical Coding Course">Professional Medical Coding Course</SelectItem>
-                                  <SelectItem value="Diploma in Logistics & Shipping Management">Diploma in Logistics & Shipping Management</SelectItem>
-                                  <SelectItem value="Diploma in Medical Transcription">Diploma in Medical Transcription</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="preferredMode"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Preferred Learning Mode *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="rounded-xl border-slate-200">
-                                    <SelectValue placeholder="Select mode" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Offline (Campus)">Offline (Campus)</SelectItem>
-                                  <SelectItem value="Online">Online</SelectItem>
-                                  <SelectItem value="Hybrid">Hybrid</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="preferredBatch"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="font-semibold text-slate-700">Preferred Batch *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger className="rounded-xl border-slate-200">
-                                    <SelectValue placeholder="Select batch time" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Morning">Morning Batch (9:30 AM - 1:00 PM)</SelectItem>
-                                  <SelectItem value="Evening">Evening Batch (2:00 PM - 5:00 PM)</SelectItem>
-                                  <SelectItem value="Weekend">Weekend Batch (Sat/Sun)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Step 5: Verification & Declaration */}
-                    <div>
-                      <div className="flex items-center gap-3 pb-3 border-b border-slate-100 mb-6">
-                        <ShieldCheck className="w-6 h-6 text-[#0056E0]" />
-                        <h2 className="text-xl font-bold text-slate-900">5. Declaration & Security</h2>
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="declaration"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-2xl border border-slate-100 p-5 bg-slate-50 mb-6">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                className="mt-0.5"
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-sm font-semibold text-slate-800">
-                                Declaration *
-                              </FormLabel>
-                              <FormDescription className="text-xs text-slate-500">
-                                I hereby declare that all the information provided in this form is true and correct to the best of my knowledge. I understand that admission is subject to verification of documents.
-                              </FormDescription>
+                  <FormField
+                    control={form.control}
+                    name="gender"
+                    render={({ field }) => (
+                      <FormItem className="space-y-4">
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">ലിംഗഭേദം / Gender *</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex gap-8 pt-2"
+                          >
+                            <div className="flex items-center space-x-3 group cursor-pointer">
+                              <RadioGroupItem value="സ്ത്രീ" id="female" className="size-5 border-2 border-slate-300 text-blue-600 focus:ring-blue-500" />
+                              <Label htmlFor="female" className="font-bold text-slate-600 group-hover:text-blue-600 cursor-pointer transition-colors">സ്ത്രീ (Female)</Label>
                             </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            <div className="flex items-center space-x-3 group cursor-pointer">
+                              <RadioGroupItem value="പുരുഷൻ" id="male" className="size-5 border-2 border-slate-300 text-blue-600 focus:ring-blue-500" />
+                              <Label htmlFor="male" className="font-bold text-slate-600 group-hover:text-blue-600 cursor-pointer transition-colors">പുരുഷൻ (Male)</Label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                      {/* Cloudflare Turnstile */}
-                      <div className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-100 rounded-2xl mb-6">
-                        <div
-                          className="cf-turnstile"
-                          data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAAAxxxxxxxxx"}
-                          data-callback="onTurnstileSuccess"
-                          data-expired-callback="onTurnstileExpired"
-                          data-error-callback="onTurnstileError"
-                        />
-                        <FormField
-                          control={form.control}
-                          name="cfTurnstileResponse"
-                          render={() => <FormMessage className="mt-2 text-center" />}
-                        />
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="caste"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-bold mb-2 block">ജാതി / Caste *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Caste" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="religion"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-bold mb-2 block">മതം / Religion *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Religion" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                    {/* Submit Button */}
-                    <div className="pt-4">
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-[#0056E0] hover:bg-blue-700 text-white font-bold text-lg py-6 rounded-2xl shadow-lg shadow-blue-500/25 transition-all"
-                      >
-                        {isSubmitting ? "Submitting Application..." : "Submit Application"}
-                      </Button>
-                      <p className="text-xs text-slate-400 text-center mt-4">
-                        Your privacy is protected. By submitting, you agree to our Terms of Service & Privacy Policy.
-                      </p>
-                    </div>
+                  <FormField
+                    control={form.control}
+                    name="hasReservation"
+                    render={({ field }) => (
+                      <FormItem className="space-y-4">
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">സംവരണം അർഹതയുള്ളവരാണോ? / Any Reservation? *</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex gap-8 pt-2"
+                          >
+                            <div className="flex items-center space-x-3 group cursor-pointer">
+                              <RadioGroupItem value="ഉണ്ട്" id="res-yes" className="size-5 border-2 border-slate-300 text-blue-600 focus:ring-blue-500" />
+                              <Label htmlFor="res-yes" className="font-bold text-slate-600 group-hover:text-blue-600 cursor-pointer transition-colors">ഉണ്ട് (Yes)</Label>
+                            </div>
+                            <div className="flex items-center space-x-3 group cursor-pointer">
+                              <RadioGroupItem value="ഇല്ല" id="res-no" className="size-5 border-2 border-slate-300 text-blue-600 focus:ring-blue-500" />
+                              <Label htmlFor="res-no" className="font-bold text-slate-600 group-hover:text-blue-600 cursor-pointer transition-colors">ഇല്ല (No)</Label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                  </form>
-                </Form>
-              </CardContent>
-            )}
-          </Card>
+                  {form.watch("hasReservation") === "ഉണ്ട്" && (
+                    <FormField
+                      control={form.control}
+                      name="reservationCategory"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-slate-700 font-bold mb-2 block">സംവരണ വിഭാഗം / Reservation Category</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl">
+                                <SelectValue placeholder="Select category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                              <SelectItem value="SC">SC</SelectItem>
+                              <SelectItem value="ST">ST</SelectItem>
+                              <SelectItem value="OBC">OBC</SelectItem>
+                              <SelectItem value="WOMEN">WOMEN</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Guardian Information */}
+              <Card className="border border-slate-100 shadow-xl shadow-blue-50/50 rounded-[32px] overflow-hidden bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 py-6">
+                  <CardTitle className="flex items-center gap-3 text-white text-xl">
+                    <ShieldCheck className="size-6 text-blue-100" />
+                    രക്ഷാകർത്താവിന്റെ വിവരങ്ങൾ / Guardian Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="guardianName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">പിതാവിന്റെയോ / രക്ഷാകർത്താവിന്റെയോ പേര് / Father’s / Guardian’s name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter guardian's name" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="relationship"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">അപേക്ഷകനുമായുള്ള ബന്ധം / Relationship with applicant *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Relationship" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="guardianMobile"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">രക്ഷാകർത്താവിന്റെ മൊബൈൽ നമ്പർ / Guardian mobile number *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="10 digit mobile number" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Educational & College Information */}
+              <Card className="border border-slate-100 shadow-xl shadow-blue-50/50 rounded-[32px] overflow-hidden bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 py-6">
+                  <CardTitle className="flex items-center gap-3 text-white text-xl">
+                    <GraduationCap className="size-6 text-blue-100" />
+                    വിദ്യാഭ്യാസവും കോളേജ് വിവരങ്ങളും / Educational & College Info
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="educationalQualification"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">വിദ്യാഭ്യാസ യോഗ്യത / Educational qualification *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter your highest qualification" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="district"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">ജില്ല / District *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your district" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="trainingCollegeName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">പരിശീലന കോളേജിന്റെ പേര് / Training college name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="College name" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="trainingCollegeCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">കോളേജ് കോഡ് / Training college code *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="College code" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Course Information */}
+              <Card className="border border-slate-100 shadow-xl shadow-blue-50/50 rounded-[32px] overflow-hidden bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 py-6">
+                  <CardTitle className="flex items-center gap-3 text-white text-xl">
+                    <BookOpen className="size-6 text-blue-100" />
+                    കോഴ്സ് വിവരങ്ങൾ / Course Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="courseName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">കോഴ്സിന്റെ പേര് / Course name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Course name" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">കാലയളവ് / Duration *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. 6 Months, 1 Year" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="referredBy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">റഫർ ചെയ്ത ആൾ / കോർഡിനേറ്റർ / Referred by / Coordinator *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Name of coordinator" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="principalName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-slate-700 font-bold mb-2 block">പ്രിൻസിപ്പലിന്റെ പേര് / Principal name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Principal name" {...field} className="h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Terms & Conditions */}
+              <Card className="border border-slate-100 shadow-xl shadow-blue-50/50 rounded-[32px] overflow-hidden bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 py-6">
+                  <CardTitle className="flex items-center gap-3 text-white text-xl">
+                    <ClipboardList className="size-6 text-blue-100" />
+                    നിബന്ധനകളും സത്യപ്രസ്താവനയും / Terms & Declaration
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8 space-y-8">
+                  <div className="bg-slate-50/90 p-6 rounded-2xl border border-slate-200/80 text-sm space-y-4 max-h-52 overflow-y-auto shadow-inner scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
+                    <h4 className="font-black text-lg text-blue-700 flex items-center gap-2 sticky top-0 bg-slate-50/90 py-1 backdrop-blur-sm z-10">
+                      <AlertCircle size={20} /> Terms & Conditions:
+                    </h4>
+                    <ol className="list-decimal pl-5 space-y-3 text-slate-600 font-medium leading-relaxed">
+                      <li>The fee once paid shall not be refunded under any circumstances.</li>
+                      <li>The management reserves the right to refuse the admission of the candidate if he/she does not submit the required documents or complete all the admission formalities.</li>
+                      <li>There is no placement/ Job offer guarantee.</li>
+                    </ol>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="acceptedTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-4 space-y-0 rounded-[20px] border border-slate-100 p-6 bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="size-6 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-all"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer font-bold text-slate-700 group-hover:text-blue-700 transition-colors">
+                            I have read the above terms and conditions; I accept all of them.
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="bg-slate-50/90 p-6 rounded-2xl border border-slate-200/80 text-[13px] leading-relaxed text-slate-600 font-medium max-h-40 overflow-y-auto shadow-inner scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
+                    <p>
+                      മുകളിൽ പറഞ്ഞിട്ടുള്ള എല്ലാ കാര്യങ്ങളും സത്യമാണെന്നും യൂത്ത് എംപ്ലോയബിലിറ്റി സ്കിൽ ട്രെയിനിങ് കോ ഓപ്പറേറ്റീവ് എഡ്യൂക്കേഷണൽ സൊസൈറ്റി ലിമിറ്റഡിന്റെ എല്ലാ നിയമങ്ങളും അനുസരിച്ച് പൂർണ്ണ സമ്മതത്തോടുകൂടി പ്രവേശനം നേടുന്നതിനും സൊസൈറ്റിയുടെ മേൽനോട്ടത്തിൽ നടത്തപ്പെടുന്ന പരീക്ഷ എഴുതുന്നതിനും പൂർണ്ണ സമ്മതമാണെന്നും അച്ചടക്ക ലംഘന പ്രവർത്തനങ്ങളിൽ ഏർപ്പെടുകയില്ലെന്നും അങ്ങനെ ഏർപ്പെടുന്നതായി അധികാരികൾക്ക് ബോധ്യപ്പെട്ടാൽ മുന്നറിയിപ്പ് കൂടാതെ പിരിച്ചുവിടുന്നതിനും ഞാൻ പൂർണ്ണമായും സമ്മതിച്ചിരിക്കുന്നു
+                    </p>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="acceptedDeclaration"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-4 space-y-0 rounded-[20px] border border-slate-100 p-6 bg-blue-50/30 hover:bg-blue-50 transition-colors cursor-pointer group">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            className="size-6 rounded-lg border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-all"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="cursor-pointer font-bold text-slate-700 group-hover:text-blue-700 transition-colors">
+                            I Agreed
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Cloudflare Turnstile */}
+              <div className="max-w-md mx-auto">
+                {turnstileSiteKey && (
+                  <div className="flex justify-center">
+                    <div 
+                      className="cf-turnstile" 
+                      data-sitekey={turnstileSiteKey}
+                      data-callback="onTurnstileSuccess"
+                      data-expired-callback="onTurnstileExpired"
+                      data-error-callback="onTurnstileError"
+                      data-theme="light"
+                    ></div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-[11px] text-center text-slate-400 font-bold uppercase tracking-widest px-8">
+                  Your information is used only for admission processing. Please submit correct details as per your certificate.
+                </p>
+                <Button
+                  type="submit"
+                  className="w-full py-8 text-xl font-black rounded-3xl shadow-2xl shadow-blue-200 hover:scale-[1.02] active:scale-95 transition-all bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-3 group"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="size-6 group-hover:scale-110 transition-transform" />
+                      Submit Admission Application
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </div>
       </main>
-
       <Footer />
       <StickyBanner />
+      
+      {/* Cloudflare Turnstile Script */}
+      {turnstileSiteKey && (
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+          async
+          defer
+        />
+      )}
     </div>
   );
 }

@@ -21,7 +21,7 @@ import Image from 'next/image';
 export default function CoursesClient() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [allCourses, setAllCourses] = useState<any[]>([]);
+  const [allCourses, setAllCourses] = useState<Array<Record<string, unknown>>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function CoursesClient() {
       try {
         const sanityCourses = await sanityClient.fetch(COURSES_QUERY);
         
-        const formattedSanityCourses = (sanityCourses || []).map((course: any) => ({
+        const formattedSanityCourses = (sanityCourses || []).map((course: Record<string, unknown>) => ({
           ...course,
           id: course._id,
           isSanity: true,
@@ -37,7 +37,7 @@ export default function CoursesClient() {
           icon: GraduationCap 
         }));
 
-        const sanitySlugs = new Set(formattedSanityCourses.map((c: any) => c.slug));
+        const sanitySlugs = new Set(formattedSanityCourses.map((c: Record<string, unknown>) => c.slug));
         const filteredLocalCourses = localCourses.filter(c => !sanitySlugs.has(c.slug));
         
         setAllCourses([...formattedSanityCourses, ...filteredLocalCourses]);

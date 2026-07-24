@@ -26,7 +26,7 @@ const Footer = () => {
               />
             </Link>
             <p className="text-slate-500 leading-relaxed text-[15px] max-w-xs">
-              Kollam's leading government-approved skill training centre. Empowering students with industry-ready professional certifications.
+              Kollam&apos;s leading government-approved skill training centre. Empowering students with industry-ready professional certifications.
             </p>
             <div className="flex items-center gap-3">
               {[

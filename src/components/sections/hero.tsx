@@ -140,7 +140,7 @@ export default function Hero() {
                 variants={itemVariants}
                 className="text-white/80 text-sm sm:text-lg md:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8 sm:mb-12"
               >
-                Master industry-ready skills with Kollam's trusted education centre. Offering government-approved diplomas in Hospital Admin, HR, Logistics, and Medical Transcription.
+                Master industry-ready skills with Kollam&apos;s trusted education centre. Offering government-approved diplomas in Hospital Admin, HR, Logistics, and Medical Transcription.
               </motion.p>
 
               <motion.div

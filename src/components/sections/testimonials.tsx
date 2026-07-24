@@ -8,7 +8,7 @@ import CustomVideoPlayer from '@/components/ui/custom-video-player';
 import { sanityClient, TESTIMONIALS_QUERY } from '@/lib/sanity';
 
 const Testimonials = () => {
-  const [sanityTestimonials, setSanityTestimonials] = useState<any[]>([]);
+  const [sanityTestimonials, setSanityTestimonials] = useState<Array<Record<string, unknown>>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

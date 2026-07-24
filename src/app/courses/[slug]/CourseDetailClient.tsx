@@ -23,11 +23,11 @@ import { notFound } from 'next/navigation';
 
 interface CourseDetailClientProps {
   slug: string;
-  initialCourse?: any;
+  initialCourse?: Record<string, unknown>;
 }
 
 export default function CourseDetailClient({ slug, initialCourse }: CourseDetailClientProps) {
-  const [course, setCourse] = useState<any>(initialCourse || null);
+  const [course, setCourse] = useState<Record<string, unknown> | null>(initialCourse || null);
   const [isLoading, setIsLoading] = useState(!initialCourse);
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
                   </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-[#0F172A] mb-8">Course Highlights</h2>
                   <div className="space-y-6">
-                    {(course.features || course.whoIsItFor || []).map((item: any, i: number) => (
+                    {((course?.features || course?.whoIsItFor || []) as Array<string | { title?: string }>).map((item, i: number) => (
                       <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/50">
                         <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
                           <CheckCircle2 className="w-5 h-5" />
@@ -209,7 +209,7 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
         </section>
 
         {/* Modules/Syllabus Section */}
-        {(course.syllabus || course.modules) && (
+        {(course?.syllabus || course?.modules) && (
           <section className="py-24 sm:py-32 px-4 sm:px-6 bg-[#0F172A] text-white">
             <div className="max-w-7xl mx-auto">
               <ScrollReveal>
@@ -226,8 +226,8 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
               </ScrollReveal>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {course.isSanity ? (
-                  (course.syllabus || []).map((item: string, i: number) => (
+                {course?.isSanity ? (
+                  ((course?.syllabus || []) as string[]).map((item: string, i: number) => (
                     <ScrollReveal key={i} delay={i * 0.1}>
                       <div className="p-8 sm:p-10 rounded-[32px] bg-white/5 border border-white/10 hover:bg-white/10 transition-all group h-full">
                         <span className="text-blue-400 text-sm font-black mb-4 block">Module 0{i+1}</span>
@@ -237,7 +237,7 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
                     </ScrollReveal>
                   ))
                 ) : (
-                  (course.modules || []).map((module: any, i: number) => (
+                  ((course?.modules || []) as Array<{ title: string; topics: string[] }>).map((module, i: number) => (
                     <ScrollReveal key={i} delay={i * 0.1}>
                       <div className="p-8 sm:p-10 rounded-[32px] bg-white/5 border border-white/10 hover:bg-white/10 transition-all group h-full">
                         <span className="text-blue-400 text-sm font-black mb-4 block">Module 0{i+1}</span>
@@ -273,10 +273,10 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
                     Where can this course <br /> take you?
                   </h2>
                   <p className="text-slate-600 text-lg mb-12 leading-relaxed">
-                    Upon successful completion of the {course.title}, you'll be eligible for various roles in the industry. Our career support team helps you prepare for these opportunities.
+                    Upon successful completion of the {String(course?.title || "")}, you&apos;ll be eligible for various roles in the industry. Our career support team helps you prepare for these opportunities.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {(course.careerOpportunities || ['Industry Expert', 'Specialist', 'Coordinator', 'Manager']).map((job: string, i: number) => (
+                    {((course?.careerOpportunities || ['Industry Expert', 'Specialist', 'Coordinator', 'Manager']) as string[]).map((job: string, i: number) => (
                       <div key={i} className="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-emerald-200 transition-colors">
                         <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                           <Target className="w-4 h-4" />
@@ -294,7 +294,7 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
                     <div className="relative bg-white p-8 sm:p-12 rounded-[40px] border border-slate-100 shadow-2xl">
                       <h4 className="text-2xl font-bold text-[#0F172A] mb-6">Key Career Focus</h4>
                       <p className="text-blue-600 font-black text-xl mb-8 leading-relaxed">
-                        "{course.careerFocus || course.learningMode || "Global Employability"}"
+                        &quot;{String(course?.careerFocus || course?.learningMode || "Global Employability")}&quot;
                       </p>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
@@ -303,7 +303,7 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
                         </div>
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-slate-400 font-bold">Admissions / Support</span>
-                          <span className="text-blue-600 font-bold">{course.contactNumber || "+91 98959 53159"}</span>
+                          <span className="text-blue-600 font-bold">{String(course?.contactNumber || "+91 98959 53159")}</span>
                         </div>
                       </div>
                     </div>
@@ -315,18 +315,18 @@ export default function CourseDetailClient({ slug, initialCourse }: CourseDetail
         </section>
 
         {/* FAQ Section */}
-        {course.faqs && course.faqs.length > 0 && (
+        {Array.isArray(course?.faqs) && (course.faqs as Array<{ question: string; answer: string }>).length > 0 && (
           <section className="py-24 sm:py-32 px-4 sm:px-6 bg-slate-50">
             <div className="max-w-4xl mx-auto">
               <ScrollReveal>
                 <div className="text-center mb-16">
                   <h2 className="text-4xl font-bold text-[#0F172A] mb-4">Frequently Asked Questions</h2>
-                  <p className="text-slate-500">Everything you need to know about the {course.title}.</p>
+                  <p className="text-slate-500">Everything you need to know about the {String(course?.title || "")}.</p>
                 </div>
               </ScrollReveal>
 
               <div className="space-y-4">
-                {course.faqs.map((faq: any, i: number) => (
+                {((course?.faqs || []) as Array<{ question: string; answer: string }>).map((faq, i: number) => (
                   <ScrollReveal key={i} delay={i * 0.1}>
                     <details className="group bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
                       <summary className="flex items-center justify-between p-6 sm:p-8 cursor-pointer list-none">

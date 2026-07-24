@@ -52,14 +52,14 @@ export default function BlogClient() {
         }`;
         const sanityPosts = await sanityClient.fetch(query);
 
-        const formattedSanityPosts = (sanityPosts || []).map((post: any) => ({
+        const formattedSanityPosts = (sanityPosts || []).map((post: Record<string, unknown>) => ({
           ...post,
           id: post._id,
           date: post.publishedAt,
           isSanity: true
         }));
         
-        const sanitySlugs = new Set(formattedSanityPosts.map((p: any) => p.slug));
+        const sanitySlugs = new Set(formattedSanityPosts.map((p: Record<string, unknown>) => p.slug));
         const filteredLocalPosts = localBlogPosts.map(p => ({
           ...p,
           featuredImageUrl: p.image,

@@ -33,7 +33,7 @@ interface PostDetail {
   author: string;
   featuredImageUrl: string;
   featuredImageAlt?: string;
-  body: any;
+  body: unknown;
   isSanity?: boolean;
 }
 
@@ -45,7 +45,7 @@ interface BlogDetailClientProps {
 export default function BlogDetailClient({ slug, initialPost }: BlogDetailClientProps) {
   const [post, setPost] = useState<PostDetail | null>(initialPost || null);
   const [isLoading, setIsLoading] = useState(!initialPost);
-  const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
+  const [relatedPosts, setRelatedPosts] = useState<Array<Record<string, unknown>>>([]);
 
   useEffect(() => {
     if (initialPost) {

@@ -1,7 +1,7 @@
 import React from "react";
 
 interface JsonLdScriptProps {
-  data: Record<string, any> | Array<Record<string, any>> | null;
+  data: Record<string, unknown> | Array<Record<string, unknown>> | null;
 }
 
 export default function JsonLdScript({ data }: JsonLdScriptProps) {

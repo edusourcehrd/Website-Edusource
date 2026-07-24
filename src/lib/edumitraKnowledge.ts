@@ -205,7 +205,7 @@ export function getLocalResponse(query: string): LocalResponse {
   
   if (!lowerQuery) return FALLBACK;
 
-  let bestMatch: { intent: any; score: number } = { intent: null, score: 0 };
+  let bestMatch: { intent: (typeof INTENTS)[number] | null; score: number } = { intent: null, score: 0 };
 
   for (const intent of INTENTS) {
     let score = 0;

@@ -92,7 +92,7 @@ const localPrograms = [
   },
 ];
 
-function CourseVideo({ src, title }: { src: string; title: string }) {
+function _CourseVideo({ src, title }: { src: string; title: string }) {
   return (
     <div className="mt-6 mb-8 overflow-hidden rounded-2xl border border-white/70 shadow-lg shadow-blue-100/40 bg-white/40">
       <video
@@ -110,7 +110,7 @@ function CourseVideo({ src, title }: { src: string; title: string }) {
 }
 
 const ComparisonSection = () => {
-  const [sanityCourses, setSanityCourses] = useState<any[]>([]);
+  const [sanityCourses, setSanityCourses] = useState<Array<Record<string, unknown>>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

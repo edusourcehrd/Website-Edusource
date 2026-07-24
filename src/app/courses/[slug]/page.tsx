@@ -24,14 +24,14 @@ async function fetchCourseData(slug: string) {
         },
       };
     }
-  } catch (e) {
+  } catch {
     // Fallback to local
   }
 
   const localCourse = localCourses.find((c) => c.slug === slug);
   if (localCourse) {
     // Exclude React component function (icon) so it can cross RSC boundary safely
-    const { icon, ...courseWithoutIcon } = localCourse;
+    const { icon: _icon, ...courseWithoutIcon } = localCourse;
     return courseWithoutIcon;
   }
 
@@ -44,8 +44,8 @@ export async function generateStaticParams() {
   try {
     const sanityCourses = await sanityClient.fetch(COURSES_QUERY);
     const sanityParams = (sanityCourses || [])
-      .filter((c: any) => c.slug)
-      .map((c: any) => ({ slug: c.slug }));
+      .filter((c: Record<string, unknown>) => Boolean(c.slug))
+      .map((c: Record<string, unknown>) => ({ slug: String(c.slug) }));
 
     const slugSet = new Set(localParams.map((p) => p.slug));
     for (const p of sanityParams) {
@@ -53,7 +53,7 @@ export async function generateStaticParams() {
         localParams.push(p);
       }
     }
-  } catch (error) {
+  } catch {
     // Ignore error in build fallback
   }
 

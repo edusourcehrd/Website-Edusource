@@ -21,55 +21,55 @@ interface PartnerLogo {
 const partnerLogos: PartnerLogo[] = [
   { 
     name: 'Kerala Computer Saksharatha Mission', 
-    src: '/logos/kcsm.png',
+    src: '/logos/kcsm.webp',
     description: "Kerala Computer Saksharatha Mission is an IT education and computer training organisation focused on skill-based digital learning and training support.",
     label: "IT Education & Training"
   },
   { 
     name: 'National Youth Programme', 
-    src: '/logos/Youth.png',
+    src: '/logos/Youth.webp',
     description: "National Youth Programme is connected with youth employability and vocational skill training pathways.",
     label: "Youth Skill Development"
   },
   { 
     name: 'MyGov', 
-    src: '/logos/my gov.png',
+    src: '/logos/my gov.webp',
     description: "MyGov is the Government of India’s citizen engagement platform for digital participation, public awareness, and governance initiatives.",
     label: "Government Citizen Engagement Platform"
   },
   { 
     name: 'ISO 9001:2015', 
-    src: '/logos/iso.png',
+    src: '/logos/iso.webp',
     description: "ISO 9001:2015 is an international quality management standard used to show process quality, consistency, and institutional credibility.",
     label: "Quality Management Standard"
   },
   { 
     name: 'Skill India', 
-    src: '/logos/sill inida.png',
+    src: '/logos/sill inida.webp',
     description: "Skill India is a Government of India initiative focused on improving practical skills, employability, and workforce development.",
     label: "Skill Development Initiative"
   },
   { 
     name: 'National Skill Development Corporation', 
-    src: '/logos/nsdc.png',
+    src: '/logos/nsdc.webp',
     description: "National Skill Development Corporation supports India’s skill development ecosystem through training partnerships, sector skill councils, and employability-focused initiatives.",
     label: "Skill Development Ecosystem"
   },
   { 
     name: 'Digital India', 
-    src: '/logos/digital india.png',
+    src: '/logos/digital india.webp',
     description: "Digital India is a Government of India programme focused on digital infrastructure, digital services, and digital empowerment.",
     label: "Digital Empowerment Initiative"
   },
   { 
     name: 'Kerala State RUTRONIX', 
-    src: '/logos/rutronix.png',
+    src: '/logos/rutronix.webp',
     description: "Kerala State RUTRONIX was set up by the Government of Kerala and is associated with professional computer courses, software training, computer training, and authorised training centres.",
     label: "Kerala Skill & Computer Training"
   },
   { 
     name: 'Kerala State RUTRONIX FLARE', 
-    src: '/logos/flare.png',
+    src: '/logos/flare.webp',
     description: "Kerala State RUTRONIX FLARE is connected with language training and skill development programmes under the Kerala State RUTRONIX ecosystem.",
     label: "Language & Skill Training"
   },

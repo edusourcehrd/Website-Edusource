@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { sanityClient, COURSES_QUERY } from '@/lib/sanity';
 
 const localPrograms = [
@@ -101,7 +102,7 @@ function CourseVideo({ src, title }: { src: string; title: string }) {
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="none"
         className="h-28 w-full object-cover md:h-32"
       />
     </div>
@@ -201,7 +202,7 @@ const ComparisonSection = () => {
                     {(program.video || program.courseImageUrl) && (
                       <div className="mt-6 mb-8 overflow-hidden rounded-2xl border border-white/70 shadow-lg shadow-blue-100/40 bg-white/40 aspect-video">
                         {program.courseImageUrl ? (
-                          <img src={program.courseImageUrl} alt={program.title} className="w-full h-full object-cover" />
+                          <Image src={program.courseImageUrl} alt={program.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
                         ) : (
                           <video
                             src={program.video}
@@ -210,7 +211,7 @@ const ComparisonSection = () => {
                             muted
                             loop
                             playsInline
-                            preload="metadata"
+                            preload="none"
                             className="h-full w-full object-cover"
                           />
                         )}

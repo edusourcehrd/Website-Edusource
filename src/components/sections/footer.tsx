@@ -18,7 +18,7 @@ const Footer = () => {
           <div className="flex flex-col gap-6 lg:col-span-1">
             <Link href="/">
               <Image
-                src="/edusource-logo.png"
+                src="/edusource-logo.webp"
                 alt="EduSource HRD Centre"
                 width={220}
                 height={60}

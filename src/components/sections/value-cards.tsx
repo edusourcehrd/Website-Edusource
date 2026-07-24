@@ -204,7 +204,7 @@ export default function ValueCards() {
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                             <div className="flex items-center gap-3 sm:gap-4 bg-[#0F172A]/90 rounded-full px-4 sm:px-5 py-3 sm:py-4 w-fit transform translate-y-4 sm:translate-y-8 translate-x-4 sm:translate-x-8 shadow-2xl border border-white/15 group-hover:-translate-y-4 group-hover:translate-x-4 transition-all duration-700 relative z-20 backdrop-blur-md">
                                 <Image
-                                  src="/out.png"
+                                  src="/out.webp"
                                   alt="Student avatar"
                                   width={40}
                                   height={40}

@@ -6,8 +6,8 @@ export const SITE_CONFIG = {
     "Edusource HRD Centre in Kollam offers government-approved, job-oriented training in Hospital Administration, HR Management, Logistics, Medical Coding, Medical Transcription, and German Language.",
   url: "https://edusourcehrd.com",
   ogImage: "https://edusourcehrd.com/og-image.png",
-  logo: "https://edusourcehrd.com/edusource-logo.png",
-  favicon: "/edusource-mini-icon.png",
+  logo: "https://edusourcehrd.com/edusource-logo.webp",
+  favicon: "/edusource-mini-icon.webp",
   themeColor: "#0056E0",
   contact: {
     phone: "+91 9895953159",

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import { VisualEditsMessenger } from "orchids-visual-edits";
 import { Toaster } from "@/components/ui/sonner";
 import ChatbotWrapper from "@/components/ChatbotWrapper";
 import { SITE_CONFIG } from "@/lib/site-config";
@@ -108,7 +107,6 @@ export default function RootLayout({
         {children}
         <Toaster position="top-center" />
         <ChatbotWrapper />
-        <VisualEditsMessenger />
       </body>
     </html>
   );

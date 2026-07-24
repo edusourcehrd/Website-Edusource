@@ -54,7 +54,7 @@ const Navbar = () => {
           <div className="flex items-center shrink-0">
             <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
               <Image
-                src="/edusource-logo.png"
+                src="/edusource-logo.webp"
                 alt="EduSource HRD Centre Logo"
                 width={160}
                 height={48}

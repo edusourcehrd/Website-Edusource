@@ -12,12 +12,12 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: SITE_CONFIG.themeColor,
     icons: [
       {
-        src: "/edusource-mini-icon.png",
+        src: "/edusource-mini-icon.webp",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/edusource-mini-icon.png",
+        src: "/edusource-mini-icon.webp",
         sizes: "512x512",
         type: "image/png",
       },

@@ -16,6 +16,7 @@ import {
   Clock
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Post {
   id: string;
@@ -95,8 +96,8 @@ export default function BlogClient() {
   const featuredPost = filteredPosts[0] || allPosts[0];
 
   const getImageUrl = (post: Post) => {
-    if (!post) return '/edusource-logo.png';
-    return post.featuredImageUrl || '/edusource-logo.png';
+    if (!post) return '/edusource-logo.webp';
+    return post.featuredImageUrl || '/edusource-logo.webp';
   };
 
   return (
@@ -135,11 +136,7 @@ export default function BlogClient() {
               <Link href={`/blog/${featuredPost.slug}`}>
                 <div className="group bg-white rounded-[40px] border border-slate-100 p-6 sm:p-10 shadow-soft hover:shadow-2xl transition-all duration-500 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center cursor-pointer">
                   <div className="lg:col-span-7 aspect-[16/9] lg:aspect-[16/10] rounded-[28px] overflow-hidden bg-slate-100 relative">
-                    <img 
-                      src={getImageUrl(featuredPost)} 
-                      alt={featuredPost.featuredImageAlt || featuredPost.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
+                    <Image src={getImageUrl(featuredPost)} alt={featuredPost.featuredImageAlt || featuredPost.title} fill sizes="(max-width: 1024px) 100vw, 60vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" priority />
                     <div className="absolute top-4 left-4">
                       <span className="px-4 py-1.5 rounded-full bg-blue-600 text-white text-xs font-bold shadow-md">
                         Featured Article
@@ -232,11 +229,7 @@ export default function BlogClient() {
                       <div className="h-full bg-white rounded-[32px] p-6 border border-slate-100 shadow-soft hover:shadow-xl transition-all duration-300 flex flex-col group cursor-pointer">
                         {/* Image Container */}
                         <div className="aspect-[16/10] rounded-[24px] overflow-hidden bg-slate-100 mb-6 relative">
-                          <img 
-                            src={getImageUrl(post)} 
-                            alt={post.featuredImageAlt || post.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
+                          <Image src={getImageUrl(post)} alt={post.featuredImageAlt || post.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           <div className="absolute top-3 left-3">
                             <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-bold shadow-sm">
                               {post.category}

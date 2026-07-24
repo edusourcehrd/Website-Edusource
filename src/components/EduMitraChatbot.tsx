@@ -128,12 +128,11 @@ export default function EduMitraChatbot() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 shrink-0 overflow-hidden shadow-inner">
                   <Image 
-                    src="/edumitra.gif" 
+                    src="/edumitra.webp" 
                     alt="EduMitra" 
                     width={40}
                     height={40}
                     className="w-full h-full object-contain"
-                    unoptimized
                   />
                 </div>
                 <div>
@@ -322,11 +321,10 @@ export default function EduMitraChatbot() {
               className="relative w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center overflow-hidden rounded-full"
             >
               <Image 
-                src="/edumitra.gif" 
+                src="/edumitra.webp" 
                 alt="EduMitra" 
                 fill
                 className="object-contain"
-                unoptimized
               />
             </motion.div>
           )}
